@@ -1,0 +1,14 @@
+/// Spacing scale aligned with Food-Project-1 auto-layout (4px base).
+abstract final class AppSpacing {
+  static const double xxs = 4;
+  static const double xs = 8;
+  static const double sm = 12;
+  static const double md = 16;
+  static const double lg = 20;
+  static const double xl = 24;
+  static const double xxl = 32;
+  static const double xxxl = 40;
+
+  static const double screenHorizontal = 20;
+  static const double screenVertical = 16;
+}
