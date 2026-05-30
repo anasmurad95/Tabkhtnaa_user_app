@@ -17,7 +17,7 @@ class TranslationProvider extends ChangeNotifier {
   bool _ready = false;
   bool _loading = false;
   String? _error;
-  List<AppLanguage> _languages = const [];
+  List<AppLanguage> _languages = _defaultLanguages;
   Map<String, String> _strings = {};
 
   String get lang => _lang;
@@ -44,15 +44,19 @@ class TranslationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadLanguages() async {
+  Future<void>? _languagesLoad;
+
+  Future<void> loadLanguages() {
+    return _languagesLoad ??= _fetchLanguages().whenComplete(() => _languagesLoad = null);
+  }
+
+  Future<void> _fetchLanguages() async {
     _loading = true;
     _error = null;
     notifyListeners();
     try {
-      _languages = await _repository.fetchLanguages();
-      if (_languages.isEmpty) {
-        _languages = _defaultLanguages;
-      }
+      final fetched = await _repository.fetchLanguages();
+      _languages = fetched.isEmpty ? _defaultLanguages : fetched;
     } catch (e) {
       _languages = _defaultLanguages;
       _error = e.toString();
@@ -64,7 +68,8 @@ class TranslationProvider extends ChangeNotifier {
 
   Future<void> selectLanguage(String code) async {
     _lang = code;
-    _rtl = code == 'ar';
+    final matches = _languages.where((l) => l.code == code);
+    _rtl = matches.isNotEmpty ? matches.first.rtl : code == 'ar';
     await LocaleStorage.setLanguage(code);
     _apiClient.setLanguage(code);
     await _loadTranslations();

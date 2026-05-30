@@ -3,6 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/location_service.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_radii.dart';
+import '../../../../core/theme/app_spacing.dart';
+import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
+import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../data/addresses_repository.dart';
 
 class AddressFormScreen extends StatefulWidget {
@@ -30,6 +36,18 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
   void initState() {
     super.initState();
     _initLocation();
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _place.dispose();
+    _neighborhood.dispose();
+    _build.dispose();
+    _floor.dispose();
+    _apartment.dispose();
+    _details.dispose();
+    super.dispose();
   }
 
   Future<void> _initLocation() async {
@@ -65,26 +83,90 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
     setState(() => _saving = false);
   }
 
+  InputDecoration _fieldDecoration(String label) => InputDecoration(
+        labelText: label,
+        labelStyle: AppTypography.shamelBook(size: 12, color: AppColors.textMuted),
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.5)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderSide: BorderSide(color: AppColors.border.withValues(alpha: 0.5)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderSide: const BorderSide(color: AppColors.primary),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('New address')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          TextField(controller: _name, decoration: const InputDecoration(labelText: 'Label')),
-          TextField(controller: _place, decoration: const InputDecoration(labelText: 'Place')),
-          TextField(controller: _neighborhood, decoration: const InputDecoration(labelText: 'Neighborhood')),
-          TextField(controller: _build, decoration: const InputDecoration(labelText: 'Building')),
-          TextField(controller: _floor, decoration: const InputDecoration(labelText: 'Floor')),
-          TextField(controller: _apartment, decoration: const InputDecoration(labelText: 'Apartment')),
-          TextField(controller: _details, decoration: const InputDecoration(labelText: 'Details')),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: _saving ? null : _save,
-            child: _saving ? const CircularProgressIndicator() : const Text('Save'),
-          ),
-        ],
+    return AppPageScaffold(
+      title: context.tr('new_address', fallback: 'عنوان جديد'),
+      body: AppPageBody(
+        child: ListView(
+          children: [
+            AppCard(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _name,
+                    textAlign: TextAlign.right,
+                    decoration: _fieldDecoration(context.tr('address_label', fallback: 'التسمية')),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: _place,
+                    textAlign: TextAlign.right,
+                    decoration: _fieldDecoration(context.tr('place', fallback: 'المكان')),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: _neighborhood,
+                    textAlign: TextAlign.right,
+                    decoration: _fieldDecoration(context.tr('neighborhood', fallback: 'الحي')),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: _build,
+                    textAlign: TextAlign.right,
+                    decoration: _fieldDecoration(context.tr('building', fallback: 'المبنى')),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: _floor,
+                    textAlign: TextAlign.right,
+                    decoration: _fieldDecoration(context.tr('floor', fallback: 'الطابق')),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: _apartment,
+                    textAlign: TextAlign.right,
+                    decoration: _fieldDecoration(context.tr('apartment', fallback: 'الشقة')),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  TextField(
+                    controller: _details,
+                    textAlign: TextAlign.right,
+                    maxLines: 3,
+                    decoration: _fieldDecoration(context.tr('details', fallback: 'تفاصيل')),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            AppPrimaryButton(
+              label: context.tr('save', fallback: 'حفظ'),
+              loading: _saving,
+              onPressed: _save,
+            ),
+          ],
+        ),
       ),
     );
   }

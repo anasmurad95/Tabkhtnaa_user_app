@@ -9,6 +9,7 @@ abstract final class FigmaAssets {
   static const loginBgFood = '${images}login_bg_food.png';
   static const loginHeaderWave = '${images}login_header_wave.png';
   static const loginHeroHouse = '${images}login_hero_house.png';
+  static const onboardingEatingMan = '${images}onboarding_eating_man.png';
   static const profileHeaderWave = '${images}profile_header_wave.png';
   static const profileAvatarSample = '${images}profile_avatar_sample.png';
 
@@ -27,4 +28,25 @@ abstract final class FigmaAssets {
   static const profileOrders = '${icons}profile_orders.png';
   static const profileNotification = '${icons}profile_notification.png';
   static const profileLogout = '${icons}profile_logout.png';
+  static const navMore = '${icons}nav_more.png';
+
+  /// Figma MCP exports many vectors with a `.png` extension (SVG/XML body).
+  static const svgAssets = {
+    splashBottomWave,
+    loginHeaderWave,
+    profileHeaderWave,
+    chevronUpOrange,
+    chevronDownWhite,
+    loginBackWhite,
+    profileBackWhite,
+    profileChevronOrange,
+    profileSettingsOrange,
+    profileStarOrange,
+    profileOrders,
+    profileNotification,
+    profileLogout,
+    navMore,
+  };
+
+  static bool isSvg(String path) => svgAssets.contains(path);
 }

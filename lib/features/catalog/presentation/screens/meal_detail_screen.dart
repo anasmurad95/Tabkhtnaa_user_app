@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/figma_assets.dart';
+import '../../../../core/widgets/figma_asset_image.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/image_url.dart';
-import '../../../../core/widgets/figma_page_scaffold.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
+import '../../../cart/presentation/screens/order_meal_screen.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../data/catalog_repository.dart';
@@ -67,13 +69,18 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Directionality(textDirection: TextDirection.rtl, child: Scaffold(body: LoadingView()));
+      return AppPageScaffold(
+        title: context.tr('meal', fallback: 'وجبة'),
+        body: const LoadingView(),
+      );
     }
     if (_error != null || _meal == null) {
-      return FigmaPageScaffold(
+      return AppPageScaffold(
         title: context.tr('meal', fallback: 'وجبة'),
-        onBack: () => Navigator.pop(context),
-        body: Center(child: Text(_error ?? 'Not found')),
+        body: AppEmptyState(
+          message: _error ?? context.tr('not_found', fallback: 'غير موجود'),
+          icon: Icons.restaurant_outlined,
+        ),
       );
     }
 
@@ -92,7 +99,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                   width: double.infinity,
                   child: meal.image != null
                       ? CachedNetworkImage(imageUrl: resolveMediaUrl(meal.image), fit: BoxFit.cover)
-                      : Image.asset(FigmaAssets.splashBgFood, fit: BoxFit.cover),
+                      : FigmaAssetImage(FigmaAssets.splashBgFood, fit: BoxFit.cover),
                 ),
                 SafeArea(
                   child: Padding(
@@ -101,7 +108,7 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
                       alignment: Alignment.centerRight,
                       child: IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Image.asset(FigmaAssets.profileBackWhite, width: 9, height: 16),
+                        icon: FigmaAssetImage(FigmaAssets.profileBackWhite, width: 9, height: 16),
                       ),
                     ),
                   ),
@@ -154,13 +161,30 @@ class _MealDetailScreenState extends State<MealDetailScreen> {
               padding: const EdgeInsets.fromLTRB(43, 0, 43, 24),
               child: SafeArea(
                 top: false,
-                child: SizedBox(
-                  height: 40,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _addToCart,
-                    child: Text(context.tr('add_to_cart', fallback: 'أضف للسلة')),
-                  ),
+                child: Column(
+                  children: [
+                    AppPrimaryButton(
+                      label: context.tr('add_to_cart', fallback: 'أضف للسلة'),
+                      onPressed: _addToCart,
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 48,
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => OrderMealScreen(meal: meal, quantity: _qty)),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: const BorderSide(color: AppColors.primary),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                        ),
+                        child: Text(context.tr('order_now', fallback: 'اطلب الآن')),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -29,6 +29,7 @@ class CartProvider extends ChangeNotifier {
     required int makerId,
     required int mealId,
     int quantity = 1,
+    String? note,
   }) async {
     loading = true;
     notifyListeners();
@@ -37,6 +38,7 @@ class CartProvider extends ChangeNotifier {
         makerId: makerId,
         mealId: mealId,
         quantity: quantity,
+        note: note,
       );
       loading = false;
       notifyListeners();

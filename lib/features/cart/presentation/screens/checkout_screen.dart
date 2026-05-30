@@ -2,14 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/figma_assets.dart';
+import '../../../../core/widgets/figma_asset_image.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/figma_page_scaffold.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../addresses/presentation/screens/addresses_screen.dart';
+import '../../../addresses/presentation/widgets/address_modals.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../../orders/data/orders_repository.dart';
+import 'payment_method_screen.dart';
 
 /// Figma 8.x checkout / payment (0:1861, 0:1973)
 class CheckoutScreen extends StatefulWidget {
@@ -45,12 +48,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       );
       if (!mounted) return;
       Navigator.popUntil(context, (r) => r.isFirst);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.tr('order_placed', fallback: 'تم إنشاء الطلب'))),
-      );
+      await showOrderSuccessModal(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        await showOrderFailureModal(context, message: e.toString());
       }
     }
     if (mounted) setState(() => _submitting = false);
@@ -58,9 +59,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FigmaPageScaffold(
+    return AppPageScaffold(
       title: context.tr('checkout', fallback: 'الدفع'),
-      onBack: () => Navigator.pop(context),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(30, 16, 30, 24),
         child: Column(
@@ -84,7 +84,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             _PaymentTile(
               label: context.tr('card', fallback: 'بطاقة'),
               selected: _payment == 'cards',
-              onTap: () => setState(() => _payment = 'cards'),
+              onTap: () async {
+                final method = await Navigator.push<String>(
+                  context,
+                  MaterialPageRoute(builder: (_) => PaymentMethodScreen(initialMethod: _payment)),
+                );
+                if (method != null) setState(() => _payment = method);
+              },
             ),
             const SizedBox(height: 20),
             Material(
@@ -102,7 +108,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       : '#$_addressId',
                   style: AppTypography.shamelBook(size: 10, color: AppColors.textMuted),
                 ),
-                trailing: Image.asset(FigmaAssets.profileChevronOrange, width: 8, height: 8),
+                trailing: FigmaAssetImage(FigmaAssets.profileChevronOrange, width: 8, height: 8),
                 onTap: () async {
                   final id = await Navigator.push<int>(
                     context,

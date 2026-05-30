@@ -1,3 +1,5 @@
+import '../../../../core/utils/json_parse.dart';
+
 class MealModel {
   final int id;
   final String name;
@@ -21,14 +23,14 @@ class MealModel {
 
   factory MealModel.fromJson(Map<String, dynamic> json) {
     return MealModel(
-      id: json['id'] as int,
+      id: parseJsonInt(json['id']),
       name: json['name']?.toString() ?? '',
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
       image: json['image']?.toString(),
       description: json['description']?.toString(),
-      userId: json['user_id'] as int?,
+      userId: parseJsonIntOrNull(json['user_id']),
       userName: json['user_name']?.toString(),
-      categoryId: json['category_id'] as int?,
+      categoryId: parseJsonIntOrNull(json['category_id']),
     );
   }
 }

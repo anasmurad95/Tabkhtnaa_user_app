@@ -20,11 +20,12 @@ class CatalogRepository {
     required double lng,
     int? categoryId,
     String? search,
+    double radius = 30,
   }) async {
     final res = await _client.dio.get('/user/meals/list', queryParameters: {
       'lat': lat,
       'long': lng,
-      'radius': 30,
+      'radius': radius,
       if (categoryId != null) 'category_id': categoryId,
       if (search != null && search.isNotEmpty) 'chafe_name': search,
     });
@@ -47,11 +48,12 @@ class CatalogRepository {
     required double lat,
     required double lng,
     String? search,
+    double radius = 30,
   }) async {
     final res = await _client.dio.get('/user/chefs', queryParameters: {
       'lat': lat,
       'long': lng,
-      'radius': 30,
+      'radius': radius,
       if (search != null && search.isNotEmpty) 'search': search,
     });
     return _parsePaginated(res.data, ChefModel.fromJson);

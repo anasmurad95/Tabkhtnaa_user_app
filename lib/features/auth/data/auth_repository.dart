@@ -4,6 +4,8 @@ import '../../../core/network/api_client.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/api_response.dart';
 import '../../../core/storage/token_storage.dart';
+import '../../../core/utils/phone_utils.dart';
+import 'models/password_reset_session.dart';
 import 'models/user_model.dart';
 
 class AuthRepository {
@@ -18,8 +20,8 @@ class AuthRepository {
     required String password,
   }) async {
     return _postAuth('/auth/login', {
-      'country_code': countryCode,
-      'mobile': mobile,
+      'country_code': PhoneUtils.normalizeCountryCode(countryCode),
+      'mobile': PhoneUtils.normalizeMobile(mobile),
       'password': password,
     });
   }
@@ -39,10 +41,83 @@ class AuthRepository {
 
   Future<void> logout() => _storage.clear();
 
+  Future<PasswordResetSession> forgetPassword({
+    required String countryCode,
+    required String mobile,
+  }) async {
+    final res = await _client.dio.post('/auth/forget-password', data: {
+      'country_code': PhoneUtils.normalizeCountryCode(countryCode),
+      'mobile': PhoneUtils.normalizeMobile(mobile),
+    });
+    final parsed = _mapResponse(res.data);
+    if (!parsed.status || parsed.data == null) {
+      throw ApiException(parsed.errorMsg ?? 'Request failed');
+    }
+    return PasswordResetSession.fromJson(
+      Map<String, dynamic>.from(parsed.data! as Map),
+    );
+  }
+
+  Future<void> resetPassword({
+    required int userId,
+    required String resetToken,
+    required String newPassword,
+    required String newPasswordConfirmation,
+  }) async {
+    final res = await _client.dio.post('/auth/reset-password', data: {
+      'user_id': userId,
+      'reset_password_token': resetToken,
+      'new_password': newPassword,
+      'new_password_confirmation': newPasswordConfirmation,
+    });
+    final parsed = _mapResponse(res.data);
+    if (!parsed.status) {
+      throw ApiException(parsed.errorMsg ?? 'Request failed');
+    }
+  }
+
   Future<UserModel> updateProfile(FormData form) async {
     final res = await _client.dio.post('/auth/update-profile', data: form);
     final user = _persistUser(_mapResponse(res.data));
     return user;
+  }
+
+  Future<Map<String, dynamic>> sendSms() async {
+    final res = await _client.dio.post('/auth/send-sms');
+    final parsed = _mapResponse(res.data);
+    if (!parsed.status || parsed.data == null) {
+      throw ApiException(parsed.errorMsg ?? 'Request failed');
+    }
+    return Map<String, dynamic>.from(parsed.data! as Map);
+  }
+
+  Future<UserModel> verifyMobile({required int userId}) async {
+    final res = await _client.dio.post('/auth/mobile-verified', data: {'user_id': userId});
+    return _persistUser(_mapResponse(res.data));
+  }
+
+  Future<String> fetchTermsAndConditions() async {
+    final res = await _client.dio.get('/auth/term-and-condition');
+    final json = res.data;
+    if (json is! Map<String, dynamic>) {
+      throw const ApiException('Invalid server response');
+    }
+    final parsed = ApiResponse<Map<String, dynamic>>.fromJson(json);
+    if (!parsed.status || parsed.data == null) {
+      throw ApiException(parsed.errorMsg ?? 'Request failed');
+    }
+    final text = parsed.data!['text'];
+    return text?.toString() ?? '';
+  }
+
+  Future<List<Map<String, dynamic>>> fetchCountries() async {
+    final res = await _client.dio.get('/countries');
+    final json = res.data;
+    if (json is! Map<String, dynamic>) return [];
+    if (json['status'] != true) return [];
+    final data = json['data'];
+    if (data is! List) return [];
+    return data.map((e) => Map<String, dynamic>.from(e as Map)).toList();
   }
 
   Future<UserModel> _postAuth(String path, Map<String, dynamic> body) async {

@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/error_view.dart';
-import '../../../../core/widgets/figma_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../providers/orders_provider.dart';
@@ -30,50 +29,51 @@ class _OrdersScreenState extends State<OrdersScreen> {
   Widget build(BuildContext context) {
     final orders = context.watch<OrdersProvider>();
 
-    return FigmaPageScaffold(
+    return AppPageScaffold(
       title: context.tr('my_orders', fallback: 'طلباتي'),
-      onBack: () => Navigator.pop(context),
       body: orders.loading
           ? const LoadingView()
           : orders.error != null
               ? ErrorView(message: orders.error!, onRetry: orders.load)
               : orders.orders.isEmpty
-                  ? Center(
-                      child: Text(
-                        context.tr('no_orders', fallback: 'لا توجد طلبات'),
-                        style: AppTypography.shamelBook(size: 12, color: AppColors.textMuted),
-                      ),
+                  ? AppEmptyState(
+                      message: context.tr('no_orders', fallback: 'لا توجد طلبات'),
+                      icon: Icons.receipt_long_outlined,
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(30, 16, 30, 24),
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
                       itemCount: orders.orders.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (_, i) {
                         final o = orders.orders[i];
-                        return Material(
-                          color: AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                          child: ListTile(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(AppRadii.md),
-                              side: const BorderSide(color: AppColors.border, width: 0.5),
-                            ),
-                            title: Text(
-                              '${context.tr('order', fallback: 'طلب')} #${o['id']}',
-                              style: AppTypography.shamelBold(size: 12),
-                            ),
-                            subtitle: Text(
-                              o['status']?.toString() ?? '',
-                              style: AppTypography.shamelBook(size: 10, color: AppColors.textMuted),
-                            ),
-                            trailing: Text(
-                              '${o['total'] ?? 0}',
-                              style: AppTypography.geBold(size: 14, color: AppColors.primary),
-                            ),
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o['id'] as int)),
-                            ),
+                        return AppCard(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => OrderDetailScreen(orderId: o['id'] as int)),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          child: Row(
+                            children: [
+                              Text(
+                                '${o['total'] ?? 0}',
+                                style: AppTypography.geBold(size: 14, color: AppColors.primary),
+                              ),
+                              const Spacer(),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '${context.tr('order', fallback: 'طلب')} #${o['id']}',
+                                    style: AppTypography.shamelBold(size: 12),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    o['status']?.toString() ?? '',
+                                    style: AppTypography.shamelBook(size: 10, color: AppColors.textMuted),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         );
                       },

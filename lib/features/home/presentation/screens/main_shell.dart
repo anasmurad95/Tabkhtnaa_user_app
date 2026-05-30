@@ -3,13 +3,13 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/widgets/figma_bottom_nav.dart';
 import '../../../cart/presentation/screens/cart_screen.dart';
+import '../../../catalog/presentation/screens/categories_screen.dart';
 import '../../../catalog/presentation/screens/chefs_screen.dart';
-import '../../../catalog/presentation/screens/home_screen.dart';
 import '../../../localization/presentation/providers/translation_provider.dart';
 import '../../../map/presentation/screens/map_screen.dart';
 import '../../../profile/presentation/screens/profile_screen.dart';
 
-/// Main shell — Figma bottom nav: المزيد · الخريطة · المشتريات · الطهاة · التصنيفات
+/// Main shell — Figma bottom nav (RTL): المزيد · المشتريات · التصنيفات · الطهاة · الخريطة
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -18,14 +18,14 @@ class MainShell extends StatefulWidget {
 }
 
 class _MainShellState extends State<MainShell> {
-  int _index = 4;
+  int _index = 2;
 
   late final List<Widget> _pages = const [
     ProfileScreen(),
-    MapScreen(),
     CartScreen(),
+    CategoriesScreen(),
     ChefsScreen(),
-    HomeScreen(),
+    MapScreen(),
   ];
 
   @override
@@ -33,10 +33,10 @@ class _MainShellState extends State<MainShell> {
     final l10n = context.watch<TranslationProvider>();
     final labels = [
       l10n.tr('nav_more', fallback: 'المزيد'),
-      l10n.tr('nav_map', fallback: 'الخريطة'),
       l10n.tr('nav_cart', fallback: 'المشتريات'),
-      l10n.tr('nav_chefs', fallback: 'الطهاة'),
       l10n.tr('nav_categories', fallback: 'التصنيفات'),
+      l10n.tr('nav_chefs', fallback: 'الطهاة'),
+      l10n.tr('nav_map', fallback: 'الخريطة'),
     ];
 
     return Scaffold(

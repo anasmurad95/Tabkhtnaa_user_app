@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/figma_assets.dart';
+import '../../../../core/widgets/figma_asset_image.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -66,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       hintText: context.tr('search_meals', fallback: 'ابحث عن وجبة أو طاهٍ'),
                       prefixIcon: Padding(
                         padding: const EdgeInsets.all(12),
-                        child: Image.asset(FigmaAssets.loginUserGrey, width: 18, height: 18),
+                        child: FigmaAssetImage(FigmaAssets.loginUserGrey, width: 18, height: 18),
                       ),
                     ),
                     onSubmitted: (_) => home.loadHome(search: _search.text.trim()),
@@ -174,7 +175,7 @@ class _CategoryHeader extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Image.asset(FigmaAssets.profileHeaderWave, fit: BoxFit.cover),
+              FigmaAssetImage(FigmaAssets.profileHeaderWave, fit: BoxFit.cover),
               SafeArea(
                 bottom: false,
                 child: Padding(
@@ -183,7 +184,7 @@ class _CategoryHeader extends StatelessWidget {
                     children: [
                       InkWell(
                         onTap: onNotifications,
-                        child: Image.asset(FigmaAssets.profileNotification, width: 22, height: 22),
+                        child: FigmaAssetImage(FigmaAssets.profileNotification, width: 22, height: 22),
                       ),
                       Expanded(
                         child: Text(
@@ -255,7 +256,7 @@ class _ChefChip extends StatelessWidget {
               ? CachedNetworkImageProvider(resolveMediaUrl(image))
               : null,
           child: image == null || image!.isEmpty
-              ? Image.asset(FigmaAssets.profileAvatarSample, width: 40, height: 40)
+              ? FigmaAssetImage(FigmaAssets.profileAvatarSample, width: 40, height: 40)
               : null,
         ),
         const SizedBox(height: 4),

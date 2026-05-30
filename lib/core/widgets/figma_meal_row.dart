@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/figma_assets.dart';
+import 'figma_asset_image.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_radii.dart';
 import '../theme/app_typography.dart';
@@ -75,7 +76,7 @@ class FigmaMealRow extends StatelessWidget {
                       ? CachedNetworkImage(imageUrl: resolveMediaUrl(imageUrl), fit: BoxFit.cover)
                       : ColoredBox(
                           color: AppColors.primaryLight,
-                          child: Image.asset(FigmaAssets.loginHeroHouse, fit: BoxFit.cover),
+                          child: FigmaAssetImage(FigmaAssets.loginHeroHouse, fit: BoxFit.cover),
                         ),
                 ),
               ),

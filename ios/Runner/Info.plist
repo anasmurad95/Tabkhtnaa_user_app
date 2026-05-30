@@ -66,5 +66,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>طبختنا يحتاج موقعك لعرض الطهاة والوجبات القريبة منك.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>طبختنا يحتاج الوصول للصور لرفع صورة الملف الشخصي أو الشكاوى.</string>
 </dict>
 </plist>

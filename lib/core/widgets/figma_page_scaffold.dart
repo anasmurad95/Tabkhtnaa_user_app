@@ -2,16 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../constants/figma_assets.dart';
+import 'figma_asset_image.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'app_page_scaffold.dart';
+
+export 'app_page_scaffold.dart';
 
 /// Shared orange header + white body (Figma 360px auth/catalog pattern).
+///
+/// Legacy wrapper — prefer [AppPageScaffold] for new screens.
+/// When [onBack] is omitted, back is hidden (tab roots). Pass [onBack] or
+/// [showBack: true] on pushed routes.
 class FigmaPageScaffold extends StatelessWidget {
   const FigmaPageScaffold({
     super.key,
     required this.title,
     required this.body,
     this.onBack,
+    this.showBack,
     this.headerHeight = 120,
     this.actions,
   });
@@ -19,63 +28,19 @@ class FigmaPageScaffold extends StatelessWidget {
   final String title;
   final Widget body;
   final VoidCallback? onBack;
+  final bool? showBack;
   final double headerHeight;
   final List<Widget>? actions;
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: Stack(
-          children: [
-            Positioned(
-              top: -80,
-              left: -158,
-              right: -158,
-              height: 220,
-              child: Image.asset(FigmaAssets.profileHeaderWave, fit: BoxFit.cover),
-            ),
-            Column(
-              children: [
-                SafeArea(
-                  bottom: false,
-                  child: SizedBox(
-                    height: headerHeight,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        children: [
-                          if (onBack != null)
-                            InkWell(
-                              onTap: onBack,
-                              child: Padding(
-                                padding: const EdgeInsets.all(8),
-                                child: Image.asset(FigmaAssets.profileBackWhite, width: 9, height: 16),
-                              ),
-                            )
-                          else
-                            const SizedBox(width: 25),
-                          Expanded(
-                            child: Text(
-                              title,
-                              textAlign: TextAlign.center,
-                              style: AppTypography.shamelBold(size: 14, color: Colors.white),
-                            ),
-                          ),
-                          if (actions != null) ...actions! else const SizedBox(width: 25),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(child: body),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return AppPageScaffold(
+      title: title,
+      body: body,
+      showBack: showBack ?? onBack != null,
+      onBack: onBack,
+      headerHeight: headerHeight,
+      actions: actions,
     );
   }
 }
@@ -116,11 +81,11 @@ class FigmaAuthScaffold extends StatelessWidget {
               child: Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Image.asset(FigmaAssets.loginHeaderWave, fit: BoxFit.fitWidth),
+                  FigmaAssetImage(FigmaAssets.loginHeaderWave, fit: BoxFit.fitWidth),
                   Positioned.fill(
                     child: Opacity(
                       opacity: 0.12,
-                      child: Image.asset(FigmaAssets.loginBgFood, fit: BoxFit.cover),
+                      child: FigmaAssetImage(FigmaAssets.loginBgFood, fit: BoxFit.cover),
                     ),
                   ),
                 ],
@@ -131,10 +96,10 @@ class FigmaAuthScaffold extends StatelessWidget {
                 children: [
                   if (showBack)
                     Align(
-                      alignment: Alignment.centerRight,
+                      alignment: AlignmentDirectional.centerStart,
                       child: IconButton(
                         onPressed: () => Navigator.maybePop(context),
-                        icon: Image.asset(FigmaAssets.loginBackWhite, width: 22, height: 22),
+                        icon: FigmaAssetImage(FigmaAssets.loginBackWhite, width: 22, height: 22),
                       ),
                     ),
                   if (hero != null) ...[hero!, const SizedBox(height: 8)],

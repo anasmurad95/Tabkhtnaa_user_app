@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import '../constants/figma_assets.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_typography.dart';
+import 'figma_asset_image.dart';
 
-/// Bottom bar matching Figma tab labels (RTL order: الخريطة … المزيد).
+/// Bottom bar — RTL order: المزيد · المشتريات · التصنيفات · الطهاة · الخريطة
 class FigmaBottomNav extends StatelessWidget {
   const FigmaBottomNav({
     super.key,
@@ -37,11 +39,7 @@ class FigmaBottomNav extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      _iconFor(i, selected),
-                      size: 24,
-                      color: selected ? AppColors.primary : AppColors.iconMuted,
-                    ),
+                    _NavIcon(index: i, selected: selected),
                     const SizedBox(height: 6),
                     Text(
                       labels[i],
@@ -59,22 +57,42 @@ class FigmaBottomNav extends StatelessWidget {
       ),
     );
   }
+}
 
-  IconData _iconFor(int index, bool selected) {
+class _NavIcon extends StatelessWidget {
+  const _NavIcon({required this.index, required this.selected});
+
+  final int index;
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    if (index == 0) {
+      return FigmaAssetImage(
+        FigmaAssets.navMore,
+        width: 24,
+        height: 24,
+        color: selected ? AppColors.primary : AppColors.iconMuted,
+      );
+    }
+
     const icons = [
-      Icons.more_horiz_rounded,
-      Icons.map_outlined,
       Icons.shopping_bag_outlined,
-      Icons.restaurant_outlined,
       Icons.grid_view_rounded,
+      Icons.restaurant_outlined,
+      Icons.map_outlined,
     ];
     const selectedIcons = [
-      Icons.more_horiz,
-      Icons.map_rounded,
       Icons.shopping_bag,
-      Icons.restaurant,
       Icons.grid_view,
+      Icons.restaurant,
+      Icons.map_rounded,
     ];
-    return selected ? selectedIcons[index] : icons[index];
+    final iconIndex = index - 1;
+    return Icon(
+      selected ? selectedIcons[iconIndex] : icons[iconIndex],
+      size: 24,
+      color: selected ? AppColors.primary : AppColors.iconMuted,
+    );
   }
 }

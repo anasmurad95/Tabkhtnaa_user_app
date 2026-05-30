@@ -3,9 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/figma_page_scaffold.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../data/orders_repository.dart';
@@ -46,15 +45,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Directionality(textDirection: TextDirection.rtl, child: Scaffold(body: LoadingView()));
+      return AppPageScaffold(
+        title: context.tr('order', fallback: 'طلب'),
+        body: const LoadingView(),
+      );
     }
     final order = _order!;
 
-    return FigmaPageScaffold(
+    return AppPageScaffold(
       title: '${context.tr('order', fallback: 'طلب')} #${order['id']}',
-      onBack: () => Navigator.pop(context),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(30, 16, 30, 24),
+      body: AppPageBody(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -64,14 +64,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             const Spacer(),
             if (order['status'] != 'cancel' && order['status'] != 'delivered')
               SizedBox(
-                height: 40,
+                height: 48,
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: _cancel,
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.accentRed,
                     side: const BorderSide(color: AppColors.accentRed),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadii.pillButton)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                   ),
                   child: Text(context.tr('cancel_order', fallback: 'إلغاء الطلب')),
                 ),
@@ -91,24 +91,16 @@ class _DetailRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.md),
-          border: Border.all(color: AppColors.border, width: 0.5),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(label, style: AppTypography.shamelBook(size: 10, color: AppColors.textMuted)),
-            const SizedBox(height: 4),
-            Text(value, style: AppTypography.shamelBold(size: 14)),
-          ],
-        ),
+    return AppCard(
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(label, style: AppTypography.shamelBook(size: 10, color: AppColors.textMuted)),
+          const SizedBox(height: 4),
+          Text(value, style: AppTypography.shamelBold(size: 14)),
+        ],
       ),
     );
   }

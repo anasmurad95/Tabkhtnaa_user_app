@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/figma_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/widgets/figma_asset_image.dart';
 import '../../../localization/presentation/providers/translation_provider.dart';
 
 /// Post-language bootstrap splash — Figma orange brand loading.
@@ -28,13 +29,13 @@ class SplashScreen extends StatelessWidget {
         body: Stack(
           fit: StackFit.expand,
           children: [
-            Image.asset(FigmaAssets.splashBgFood, fit: BoxFit.cover),
+            FigmaAssetImage(FigmaAssets.splashBgFood, fit: BoxFit.cover),
             Container(decoration: const BoxDecoration(gradient: AppColors.splashGradient)),
             Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.asset(FigmaAssets.splashLogoMain, width: 120, height: 114, fit: BoxFit.contain),
+                  FigmaAssetImage(FigmaAssets.splashLogoMain, width: 120, height: 114, fit: BoxFit.contain, color: Colors.white),
                   const SizedBox(height: 32),
                   const SizedBox(
                     width: 28,

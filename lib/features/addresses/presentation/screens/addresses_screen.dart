@@ -5,10 +5,11 @@ import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/figma_page_scaffold.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../data/addresses_repository.dart';
+import '../widgets/address_modals.dart';
 import 'address_form_screen.dart';
 
 class AddressesScreen extends StatefulWidget {
@@ -46,11 +47,10 @@ class _AddressesScreenState extends State<AddressesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return FigmaPageScaffold(
+    return AppPageScaffold(
       title: widget.selectMode
           ? context.tr('select_address', fallback: 'اختر عنواناً')
           : context.tr('addresses', fallback: 'العناوين'),
-      onBack: () => Navigator.pop(context),
       body: Stack(
         children: [
           _loading
@@ -70,6 +70,8 @@ class _AddressesScreenState extends State<AddressesScreen> {
                           separatorBuilder: (_, _) => const SizedBox(height: 12),
                           itemBuilder: (_, i) {
                             final a = _items[i];
+                            final lat = double.tryParse(a['latitude']?.toString() ?? '');
+                            final lng = double.tryParse(a['longitude']?.toString() ?? '');
                             return Material(
                               color: AppColors.surface,
                               borderRadius: BorderRadius.circular(AppRadii.md),
@@ -80,9 +82,40 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                 ),
                                 title: Text(a['name']?.toString() ?? 'Address', style: AppTypography.shamelBold(size: 12)),
                                 subtitle: Text(a['place']?.toString() ?? '', style: AppTypography.shamelBook(size: 10, color: AppColors.textMuted)),
+                                trailing: widget.selectMode
+                                    ? const Icon(Icons.check_circle_outline, color: AppColors.primary)
+                                    : PopupMenuButton<String>(
+                                        onSelected: (v) async {
+                                          if (v == 'map') {
+                                            await showChefAddressMapModal(
+                                              context,
+                                              chefName: a['name']?.toString() ?? '',
+                                              address: a['place']?.toString() ?? '',
+                                              lat: lat,
+                                              lng: lng,
+                                            );
+                                          } else if (v == 'delete') {
+                                            final ok = await showDeleteAddressConfirm(context);
+                                            if (ok && mounted) {
+                                              await AddressesRepository(context.read<ApiClient>()).delete(a['id'] as int);
+                                              _load();
+                                            }
+                                          }
+                                        },
+                                        itemBuilder: (_) => [
+                                          PopupMenuItem(value: 'map', child: Text(context.tr('show_map', fallback: 'عرض على الخريطة'))),
+                                          PopupMenuItem(value: 'delete', child: Text(context.tr('delete', fallback: 'حذف'))),
+                                        ],
+                                      ),
                                 onTap: widget.selectMode
                                     ? () => Navigator.pop(context, a['id'] as int)
-                                    : null,
+                                    : () => showChefAddressMapModal(
+                                          context,
+                                          chefName: a['name']?.toString() ?? '',
+                                          address: a['place']?.toString() ?? '',
+                                          lat: lat,
+                                          lng: lng,
+                                        ),
                               ),
                             );
                           },

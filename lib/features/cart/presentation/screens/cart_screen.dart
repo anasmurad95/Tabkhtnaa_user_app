@@ -3,12 +3,12 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
-import '../../../../core/widgets/error_view.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/figma_meal_row.dart';
-import '../../../../core/widgets/figma_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../providers/cart_provider.dart';
+import '../widgets/utensils_modal.dart';
 import 'checkout_screen.dart';
 
 /// Figma 8.x — سلة المشتريات (0:2094+)
@@ -30,14 +30,19 @@ class _CartScreenState extends State<CartScreen> {
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
 
-    return FigmaPageScaffold(
+    return AppPageScaffold(
       title: context.tr('cart_title', fallback: 'سلة المشتريات'),
+      showBack: false,
       body: cart.loading
           ? const LoadingView()
           : cart.cart == null
-              ? ErrorView(
+              ? AppEmptyState(
                   message: cart.error ?? context.tr('cart_empty', fallback: 'السلة فارغة'),
-                  onRetry: cart.load,
+                  icon: Icons.shopping_cart_outlined,
+                  action: AppPrimaryButton(
+                    label: context.tr('retry', fallback: 'إعادة المحاولة'),
+                    onPressed: cart.load,
+                  ),
                 )
               : Column(
                   children: [
@@ -72,6 +77,30 @@ class _CartScreenState extends State<CartScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
+                                Text(context.tr('subtotal', fallback: 'المجموع الفرعي'), style: AppTypography.shamelBook(size: 12)),
+                                Text('${cart.cart!['sub_total'] ?? cart.cart!['total'] ?? 0}'),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(context.tr('vat', fallback: 'ضريبة'), style: AppTypography.shamelBook(size: 12)),
+                                Text('${cart.cart!['tax'] ?? 0}'),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(context.tr('delivery_fee', fallback: 'التوصيل'), style: AppTypography.shamelBook(size: 12)),
+                                Text('${cart.cart!['delivery_fees'] ?? 0}'),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
                                 Text(context.tr('total', fallback: 'المجموع'), style: AppTypography.shamelBold(size: 14)),
                                 Text(
                                   '${cart.cart!['total'] ?? 0}',
@@ -80,16 +109,16 @@ class _CartScreenState extends State<CartScreen> {
                               ],
                             ),
                             const SizedBox(height: 12),
-                            SizedBox(
-                              height: 40,
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: () => Navigator.push(
+                            AppPrimaryButton(
+                              label: context.tr('checkout', fallback: 'إتمام الطلب'),
+                              onPressed: () async {
+                                await showUtensilsModal(context);
+                                if (!context.mounted) return;
+                                Navigator.push(
                                   context,
                                   MaterialPageRoute(builder: (_) => CheckoutScreen(cart: cart.cart!)),
-                                ),
-                                child: Text(context.tr('checkout', fallback: 'إتمام الطلب')),
-                              ),
+                                );
+                              },
                             ),
                           ],
                         ),
