@@ -41,26 +41,38 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   Future<void> markSeen(int id) async {
-    await _repo.markSeen(id);
-    items = items
-        .map((n) => n.id == id
-            ? NotificationModel(
-                id: n.id,
-                title: n.title,
-                body: n.body,
-                orderId: n.orderId,
-                data: n.data,
-                seen: true,
-                createdAt: n.createdAt,
-              )
-            : n)
-        .toList();
-    notifyListeners();
+    try {
+      await _repo.markSeen(id);
+      items = items
+          .map((n) => n.id == id
+              ? NotificationModel(
+                  id: n.id,
+                  title: n.title,
+                  body: n.body,
+                  orderId: n.orderId,
+                  data: n.data,
+                  seen: true,
+                  createdAt: n.createdAt,
+                )
+              : n)
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
   }
 
   Future<void> deleteAll() async {
-    await _repo.deleteAll();
-    items = [];
-    notifyListeners();
+    try {
+      await _repo.deleteAll();
+      items = [];
+      notifyListeners();
+    } catch (e) {
+      error = e.toString();
+      notifyListeners();
+      rethrow;
+    }
   }
 }

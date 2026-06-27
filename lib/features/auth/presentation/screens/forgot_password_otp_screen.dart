@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/password_reset_session.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
@@ -37,10 +38,9 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
 
   void _confirm() {
     if (_code.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr('otp_required', fallback: 'أدخل الرمز المكون من 4 أرقام')),
-        ),
+      AppToast.info(
+        context,
+        context.tr('otp_required', fallback: 'أدخل الرمز المكون من 4 أرقام'),
       );
       return;
     }
@@ -59,16 +59,14 @@ class _ForgotPasswordOtpScreenState extends State<ForgotPasswordOtpScreen> {
         );
     if (!mounted) return;
     if (session == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<AuthProvider>().error ??
-                context.tr('resend_failed', fallback: 'تعذر إعادة الإرسال'),
-          ),
-        ),
+      AppToast.error(
+        context,
+        context.read<AuthProvider>().error ??
+            context.tr('resend_failed', fallback: 'تعذر إعادة الإرسال'),
       );
       return;
     }
+    AppToast.success(context, context.tr('reset_code_sent', fallback: 'تم إرسال رمز التحقق'));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => ForgotPasswordOtpScreen(session: session)),

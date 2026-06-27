@@ -22,9 +22,17 @@ class ChefModel {
   });
 
   double? get averageRating {
-    final raw = ratings?['avg'] ?? ratings?['average'];
-    if (raw == null) return null;
-    return double.tryParse(raw.toString());
+    if (ratings == null) return null;
+    final values = [
+      ratings!['rating_chef'],
+      ratings!['rating_delivery'],
+      ratings!['rating_speed_chef'],
+    ]
+        .map((v) => double.tryParse(v?.toString() ?? ''))
+        .whereType<double>()
+        .toList();
+    if (values.isEmpty) return null;
+    return values.reduce((a, b) => a + b) / values.length;
   }
 
   String get locationGroupKey =>

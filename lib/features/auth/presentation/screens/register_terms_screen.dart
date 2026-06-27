@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../providers/auth_provider.dart';
@@ -35,25 +36,19 @@ class _RegisterTermsScreenState extends State<RegisterTermsScreen> {
       _loadingTerms = false;
     });
     if (terms == null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<AuthProvider>().error ??
-                context.tr('terms_load_failed', fallback: 'تعذر تحميل الشروط'),
-          ),
-        ),
+      AppToast.error(
+        context,
+        context.read<AuthProvider>().error ??
+            context.tr('terms_load_failed', fallback: 'تعذر تحميل الشروط'),
       );
     }
   }
 
   void _finish() {
     if (!_accepted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('accept_terms_required', fallback: 'يجب الموافقة على الشروط والأحكام'),
-          ),
-        ),
+      AppToast.info(
+        context,
+        context.tr('accept_terms_required', fallback: 'يجب الموافقة على الشروط والأحكام'),
       );
       return;
     }

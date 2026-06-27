@@ -5,18 +5,16 @@ import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 
-/// Figma utensils modal — كاسات / صحون / ملاعق / شراشف checkboxes.
-Future<Map<String, bool>?> showUtensilsModal(BuildContext context) {
-  return showDialog<Map<String, bool>>(
+/// Accessories picker — maps API accessories by [key] (cups, plates, spoons, napkins).
+Future<List<int>?> showUtensilsModal(
+  BuildContext context, {
+  required List<Map<String, dynamic>> accessories,
+}) {
+  final selected = <int>{};
+
+  return showDialog<List<int>>(
     context: context,
     builder: (ctx) {
-      final options = <String, bool>{
-        'cups': false,
-        'plates': false,
-        'spoons': false,
-        'napkins': false,
-      };
-
       return Directionality(
         textDirection: TextDirection.rtl,
         child: StatefulBuilder(
@@ -40,31 +38,29 @@ Future<Map<String, bool>?> showUtensilsModal(BuildContext context) {
                       style: AppTypography.shamelBold(size: 14),
                     ),
                     const SizedBox(height: 16),
-                    _CheckRow(
-                      label: ctx.tr('cups', fallback: 'كاسات'),
-                      value: options['cups']!,
-                      onChanged: (v) => setModalState(() => options['cups'] = v ?? false),
-                    ),
-                    _CheckRow(
-                      label: ctx.tr('plates', fallback: 'صحون'),
-                      value: options['plates']!,
-                      onChanged: (v) => setModalState(() => options['plates'] = v ?? false),
-                    ),
-                    _CheckRow(
-                      label: ctx.tr('spoons', fallback: 'ملاعق'),
-                      value: options['spoons']!,
-                      onChanged: (v) => setModalState(() => options['spoons'] = v ?? false),
-                    ),
-                    _CheckRow(
-                      label: ctx.tr('napkins', fallback: 'شراشف'),
-                      value: options['napkins']!,
-                      onChanged: (v) => setModalState(() => options['napkins'] = v ?? false),
-                    ),
+                    for (final accessory in accessories)
+                      _CheckRow(
+                        label: accessory['name']?.toString() ??
+                            accessory['default_name']?.toString() ??
+                            accessory['key']?.toString() ??
+                            '',
+                        value: selected.contains(accessory['id'] as int),
+                        onChanged: (v) {
+                          setModalState(() {
+                            final id = accessory['id'] as int;
+                            if (v == true) {
+                              selected.add(id);
+                            } else {
+                              selected.remove(id);
+                            }
+                          });
+                        },
+                      ),
                     const SizedBox(height: 16),
                     SizedBox(
                       height: 40,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.pop(ctx, options),
+                        onPressed: () => Navigator.pop(ctx, selected.toList()),
                         child: Text(ctx.tr('confirm', fallback: 'تأكيد')),
                       ),
                     ),

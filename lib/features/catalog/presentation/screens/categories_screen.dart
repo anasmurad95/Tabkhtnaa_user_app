@@ -13,6 +13,7 @@ import '../../../../core/theme/app_radii.dart';
 
 import '../../../../core/theme/app_typography.dart';
 
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/category_icon_image.dart';
 
 import '../../../../core/widgets/error_view.dart';
@@ -79,216 +80,47 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
 
 
-    return Directionality(
-
-      textDirection: TextDirection.rtl,
-
-      child: Scaffold(
-
-        backgroundColor: AppColors.background,
-
-        body: Column(
-
-          children: [
-
-            _CategoriesHeader(
-
-              title: context.tr('nav_categories', fallback: 'التصنيفات'),
-
-              onProfile: () {},
-
-              profileImage: auth.user?.profileImage,
-
-              profileName: auth.user?.name,
-
-              onFilter: () {},
-
-            ),
-
-            Expanded(
-
-              child: home.loading
-
-                  ? const LoadingView()
-
-                  : home.error != null
-
-                      ? ErrorView(message: home.error!, onRetry: home.loadCategories)
-
-                      : RefreshIndicator(
-
-                          color: AppColors.primary,
-
-                          onRefresh: home.loadCategories,
-
-                          child: GridView.builder(
-
-                            padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
-
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-
-                              crossAxisCount: 3,
-
-                              mainAxisSpacing: 16,
-
-                              crossAxisSpacing: 12,
-
-                              childAspectRatio: 0.85,
-
-                            ),
-
-                            itemCount: home.categories.length,
-
-                            itemBuilder: (_, i) => _CategoryTile(
-
-                              category: home.categories[i],
-
-                              onTap: () => Navigator.push(
-
-                                context,
-
-                                MaterialPageRoute(
-
-                                  builder: (_) => MealsListScreen(category: home.categories[i]),
-
-                                ),
-
-                              ),
-
-                            ),
-
-                          ),
-
-                        ),
-
-            ),
-
-          ],
-
+    return AppPageScaffold(
+      title: context.tr('nav_categories', fallback: 'التصنيفات'),
+      showBack: false,
+      leading: ProfileAvatarImage(
+        imageUrl: auth.user?.profileImage,
+        size: 32,
+        initials: auth.user?.name?.isNotEmpty == true ? auth.user!.name.substring(0, 1) : null,
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.tune, color: Colors.white, size: 22),
         ),
-
-      ),
-
-    );
-
-  }
-
-}
-
-
-
-class _CategoriesHeader extends StatelessWidget {
-
-  const _CategoriesHeader({
-
-    required this.title,
-
-    required this.onProfile,
-
-    required this.onFilter,
-
-    this.profileImage,
-
-    this.profileName,
-
-  });
-
-
-
-  final String title;
-
-  final VoidCallback onProfile;
-
-  final VoidCallback onFilter;
-
-  final String? profileImage;
-
-  final String? profileName;
-
-
-
-  @override
-
-  Widget build(BuildContext context) {
-
-    return SizedBox(
-
-      height: 120,
-
-      child: Stack(
-
-        fit: StackFit.expand,
-
-        children: [
-
-          FigmaAssetImage(FigmaAssets.profileHeaderWave, fit: BoxFit.cover),
-
-          SafeArea(
-
-            bottom: false,
-
-            child: Padding(
-
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-
-              child: Row(
-
-                children: [
-
-                  InkWell(
-
-                    onTap: onProfile,
-
-                    child: ProfileAvatarImage(
-
-                      imageUrl: profileImage,
-
-                      size: 32,
-
-                      initials: profileName?.substring(0, 1),
-
+      ],
+      body: home.loading
+          ? const LoadingView()
+          : home.error != null
+              ? ErrorView(message: home.error!, onRetry: home.loadCategories)
+              : RefreshIndicator(
+                  color: AppColors.primary,
+                  onRefresh: home.loadCategories,
+                  child: GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 100),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 0.85,
                     ),
-
-                  ),
-
-                  Expanded(
-
-                    child: Text(
-
-                      title,
-
-                      textAlign: TextAlign.center,
-
-                      style: AppTypography.shamelBold(size: 14, color: Colors.white),
-
+                    itemCount: home.categories.length,
+                    itemBuilder: (_, i) => _CategoryTile(
+                      category: home.categories[i],
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MealsListScreen(category: home.categories[i]),
+                        ),
+                      ),
                     ),
-
                   ),
-
-                  IconButton(
-
-                    onPressed: onFilter,
-
-                    padding: EdgeInsets.zero,
-
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-
-                    icon: const Icon(Icons.tune, color: Colors.white, size: 22),
-
-                  ),
-
-                ],
-
-              ),
-
-            ),
-
-          ),
-
-        ],
-
-      ),
-
+                ),
     );
 
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
@@ -27,12 +28,27 @@ class _ProfileTermsScreenState extends State<ProfileTermsScreen> {
   }
 
   Future<void> _load() async {
-    final terms = await context.read<AuthProvider>().loadTermsAndConditions();
-    if (!mounted) return;
-    setState(() {
-      _text = terms ?? context.tr('terms_unavailable', fallback: 'الشروط غير متوفرة حالياً');
-      _loading = false;
-    });
+    try {
+      final auth = context.read<AuthProvider>();
+      final terms = await auth.loadTermsAndConditions();
+      if (!mounted) return;
+      if (terms == null && auth.error != null) {
+        AppToast.error(context, auth.error!);
+      } else if (terms == null) {
+        AppToast.info(
+          context,
+          context.tr('terms_unavailable', fallback: 'الشروط غير متوفرة حالياً'),
+        );
+      }
+      setState(() {
+        _text = terms ?? context.tr('terms_unavailable', fallback: 'الشروط غير متوفرة حالياً');
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      AppToast.error(context, e.toString());
+    }
   }
 
   @override

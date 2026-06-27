@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/constants/figma_assets.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/figma_asset_image.dart';
@@ -88,13 +89,17 @@ class _LoginScreenState extends State<LoginScreen> {
           password: _password.text,
         );
     if (!ok && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<AuthProvider>().error ??
-                context.tr('login_failed', fallback: 'فشل تسجيل الدخول'),
-          ),
-        ),
+      AppToast.error(
+        context,
+        context.read<AuthProvider>().error ??
+            context.tr('login_failed', fallback: 'فشل تسجيل الدخول'),
+      );
+      return;
+    }
+    if (ok && mounted) {
+      AppToast.success(
+        context,
+        context.tr('login_success', fallback: 'تم تسجيل الدخول بنجاح'),
       );
     }
   }

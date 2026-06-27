@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/figma_asset_image.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -37,7 +38,6 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Map<String, dynamic>> _messages = [];
   int? _conversationId;
   bool _loading = true;
-  String? _error;
 
   @override
   void initState() {
@@ -55,10 +55,7 @@ class _ChatScreenState extends State<ChatScreen> {
   ChatRepository get _repo => ChatRepository(context.read<ApiClient>());
 
   Future<void> _bootstrap() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
+    setState(() => _loading = true);
     try {
       if (_conversationId != null) {
         final data = await _repo.getConversation(_conversationId!);
@@ -79,7 +76,9 @@ class _ChatScreenState extends State<ChatScreen> {
         }
       }
     } catch (e) {
-      _error = e.toString();
+      if (mounted) {
+        AppToast.error(context, e.toString());
+      }
     }
     if (mounted) setState(() => _loading = false);
   }
@@ -96,7 +95,7 @@ class _ChatScreenState extends State<ChatScreen> {
       await _repo.sendMessage(conversationId: _conversationId!, message: text);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        AppToast.error(context, e.toString());
       }
     }
   }
@@ -111,11 +110,6 @@ class _ChatScreenState extends State<ChatScreen> {
           ? const LoadingView()
           : Column(
               children: [
-                if (_error != null)
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(_error!, style: AppTypography.shamelBook(size: 10, color: AppColors.error)),
-                  ),
                 Expanded(
                   child: _messages.isEmpty
                       ? Center(

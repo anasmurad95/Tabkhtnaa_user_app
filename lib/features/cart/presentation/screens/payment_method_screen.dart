@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
@@ -55,10 +56,13 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
         'expiry_date': _expiry.text.trim(),
         'cvv': _cvv.text.trim(),
       });
-      if (mounted) Navigator.pop(context, _method);
+      if (mounted) {
+        AppToast.success(context, context.tr('payment_saved', fallback: 'تم حفظ طريقة الدفع'));
+        Navigator.pop(context, _method);
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        AppToast.error(context, e.toString());
       }
     }
     if (mounted) setState(() => _saving = false);

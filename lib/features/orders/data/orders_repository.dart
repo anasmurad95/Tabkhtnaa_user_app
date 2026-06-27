@@ -15,7 +15,7 @@ class OrdersRepository {
   }
 
   Future<Map<String, dynamic>> getOrder(int id) async {
-    final res = await _client.dio.get('/user/orders/get', queryParameters: {'id': id});
+    final res = await _client.dio.get('/user/orders/get', queryParameters: {'order_id': id});
     final parsed = ApiResponse.fromJson(res.data as Map<String, dynamic>);
     if (!parsed.status || parsed.data == null) {
       throw ApiException(parsed.errorMsg ?? 'Order not found');

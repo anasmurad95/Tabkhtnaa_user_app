@@ -28,9 +28,35 @@ class MealModel {
       price: double.tryParse(json['price']?.toString() ?? '0') ?? 0,
       image: json['image']?.toString(),
       description: json['description']?.toString(),
-      userId: parseJsonIntOrNull(json['user_id']),
+      userId: _parseMakerId(json),
       userName: json['user_name']?.toString(),
       categoryId: parseJsonIntOrNull(json['category_id']),
     );
   }
+
+  /// Chef / maker id — API may use snake_case, camelCase, or nested `user`.
+  static int? _parseMakerId(Map<String, dynamic> json) {
+    final direct = parseJsonIntOrNull(json['user_id']) ??
+        parseJsonIntOrNull(json['userId']) ??
+        parseJsonIntOrNull(json['chef_id']) ??
+        parseJsonIntOrNull(json['maker_id']);
+    if (direct != null) return direct;
+
+    final user = json['user'];
+    if (user is Map<String, dynamic>) {
+      return parseJsonIntOrNull(user['id']);
+    }
+    return null;
+  }
+
+  MealModel withMakerId(int makerId) => MealModel(
+        id: id,
+        name: name,
+        price: price,
+        image: image,
+        description: description,
+        userId: makerId,
+        userName: userName,
+        categoryId: categoryId,
+      );
 }

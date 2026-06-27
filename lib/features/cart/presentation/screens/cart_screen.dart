@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/figma_meal_row.dart';
@@ -23,7 +24,14 @@ class _CartScreenState extends State<CartScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<CartProvider>().load());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<CartProvider>().load();
+      if (!mounted) return;
+      final cart = context.read<CartProvider>();
+      if (cart.error != null) {
+        AppToast.error(context, cart.error!);
+      }
+    });
   }
 
   @override
@@ -41,7 +49,12 @@ class _CartScreenState extends State<CartScreen> {
                   icon: Icons.shopping_cart_outlined,
                   action: AppPrimaryButton(
                     label: context.tr('retry', fallback: 'إعادة المحاولة'),
-                    onPressed: cart.load,
+                    onPressed: () async {
+                      await cart.load();
+                      if (context.mounted && cart.error != null) {
+                        AppToast.error(context, cart.error!);
+                      }
+                    },
                   ),
                 )
               : Column(
@@ -59,7 +72,21 @@ class _CartScreenState extends State<CartScreen> {
                             price: '${meal['price'] ?? item['price'] ?? 0}',
                             subtitle: '${context.tr('qty', fallback: 'الكمية')}: ${item['quantity']}',
                             imageUrl: meal['image']?.toString(),
-                            onDelete: () => cart.remove(item['id'] as int),
+                            onDelete: () async {
+                              try {
+                                await cart.remove(item['id'] as int);
+                                if (context.mounted) {
+                                  AppToast.success(
+                                    context,
+                                    context.tr('item_removed', fallback: 'تم حذف العنصر من السلة'),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  AppToast.error(context, e.toString());
+                                }
+                              }
+                            },
                           );
                         },
                       ),
@@ -112,7 +139,13 @@ class _CartScreenState extends State<CartScreen> {
                             AppPrimaryButton(
                               label: context.tr('checkout', fallback: 'إتمام الطلب'),
                               onPressed: () async {
-                                await showUtensilsModal(context);
+                                final accessories = await cart.loadAccessories();
+                                if (!context.mounted) return;
+                                final selected = await showUtensilsModal(context, accessories: accessories);
+                                if (!context.mounted || selected == null) return;
+                                if (selected.isNotEmpty) {
+                                  await cart.setAccessories(selected);
+                                }
                                 if (!context.mounted) return;
                                 Navigator.push(
                                   context,

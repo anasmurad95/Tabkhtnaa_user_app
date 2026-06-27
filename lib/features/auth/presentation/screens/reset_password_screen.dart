@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/password_reset_session.dart';
@@ -46,23 +47,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!mounted) return;
 
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<AuthProvider>().error ??
-                context.tr('reset_password_failed', fallback: 'تعذر تحديث كلمة المرور'),
-          ),
-        ),
+      AppToast.error(
+        context,
+        context.read<AuthProvider>().error ??
+            context.tr('reset_password_failed', fallback: 'تعذر تحديث كلمة المرور'),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.tr('reset_password_success', fallback: 'تم تحديث كلمة المرور بنجاح'),
-        ),
-      ),
+    AppToast.success(
+      context,
+      context.tr('reset_password_success', fallback: 'تم تحديث كلمة المرور بنجاح'),
     );
 
     Navigator.of(context).pushAndRemoveUntil(

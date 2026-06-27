@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/figma_assets.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 
 import '../../../../core/theme/app_typography.dart';
 
@@ -84,9 +85,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           TextButton(
 
             onPressed: () async {
-
-              await provider.deleteAll();
-
+              try {
+                await provider.deleteAll();
+                if (context.mounted) {
+                  AppToast.success(
+                    context,
+                    context.tr('notifications_deleted', fallback: 'تم حذف الإشعارات'),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  AppToast.error(context, e.toString());
+                }
+              }
             },
 
             child: Text(
@@ -153,7 +164,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
                                 item: item,
 
-                                onSeen: () => provider.markSeen(item.id),
+                                onSeen: () => _markSeen(context, provider, item.id),
 
                               );
 
@@ -169,6 +180,20 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     );
 
+  }
+
+  Future<void> _markSeen(
+    BuildContext context,
+    NotificationsProvider provider,
+    int id,
+  ) async {
+    try {
+      await provider.markSeen(id);
+    } catch (e) {
+      if (context.mounted) {
+        AppToast.error(context, e.toString());
+      }
+    }
   }
 
 }

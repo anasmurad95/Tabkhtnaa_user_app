@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/constants/figma_assets.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../auth/presentation/widgets/password_reset_scaffold.dart';
 import '../../../auth/presentation/widgets/register_form_field.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
@@ -45,25 +47,22 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
     if (!mounted) return;
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            profile.error ??
-                context.tr('change_password_failed', fallback: 'تعذر تغيير كلمة المرور'),
-          ),
-        ),
+      AppToast.error(
+        context,
+        profile.error ??
+            context.tr('change_password_failed', fallback: 'تعذر تغيير كلمة المرور'),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.tr('change_password_success', fallback: 'تم تغيير كلمة المرور'),
-        ),
+    AppToast.success(
+      context,
+      context.tr(
+        'change_password_logout',
+        fallback: 'تم تغيير كلمة المرور. يرجى تسجيل الدخول مرة أخرى',
       ),
     );
-    Navigator.pop(context);
+    await context.read<AuthProvider>().logout();
   }
 
   @override

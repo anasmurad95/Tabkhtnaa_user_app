@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/error_view.dart';
@@ -22,7 +23,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<OrdersProvider>().load());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<OrdersProvider>().load();
+      if (!mounted) return;
+      final orders = context.read<OrdersProvider>();
+      if (orders.error != null) {
+        AppToast.error(context, orders.error!);
+      }
+    });
+  }
+
+  Future<void> _retryLoad() async {
+    await context.read<OrdersProvider>().load();
+    if (!mounted) return;
+    final orders = context.read<OrdersProvider>();
+    if (orders.error != null) {
+      AppToast.error(context, orders.error!);
+    }
   }
 
   @override
@@ -34,7 +51,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       body: orders.loading
           ? const LoadingView()
           : orders.error != null
-              ? ErrorView(message: orders.error!, onRetry: orders.load)
+              ? ErrorView(message: orders.error!, onRetry: _retryLoad)
               : orders.orders.isEmpty
                   ? AppEmptyState(
                       message: context.tr('no_orders', fallback: 'لا توجد طلبات'),

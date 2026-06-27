@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/bank_info_repository.dart';
@@ -101,13 +102,14 @@ class _RegisterPaymentScreenState extends State<RegisterPaymentScreen> {
 
       await context.read<BankInfoRepository>().create(payload);
       if (!mounted) return;
+      AppToast.success(context, context.tr('payment_saved', fallback: 'تم حفظ طريقة الدفع'));
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const RegisterTermsScreen()),
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        AppToast.error(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _loading = false);

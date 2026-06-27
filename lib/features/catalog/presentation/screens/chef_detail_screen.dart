@@ -8,12 +8,14 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/image_url.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/widgets/figma_meal_row.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/loading_view.dart';
 import '../../../chat/presentation/screens/chat_screen.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../data/catalog_repository.dart';
+import '../../../ratings/data/rating_repository.dart';
 import 'meal_detail_screen.dart';
 
 /// Figma chef profile — header ratings, tabs: معلومات | قائمة طعام | تعليقات
@@ -29,6 +31,7 @@ class ChefDetailScreen extends StatefulWidget {
 class _ChefDetailScreenState extends State<ChefDetailScreen> with SingleTickerProviderStateMixin {
   Map<String, dynamic>? _chef;
   bool _loading = true;
+  String? _error;
   late TabController _tabs;
   String? _mealFilter;
 
@@ -46,11 +49,23 @@ class _ChefDetailScreenState extends State<ChefDetailScreen> with SingleTickerPr
   }
 
   Future<void> _load() async {
-    final data = await CatalogRepository(context.read<ApiClient>()).getChef(widget.chefId);
     setState(() {
-      _chef = data;
-      _loading = false;
+      _loading = true;
+      _error = null;
     });
+    try {
+      final data = await CatalogRepository(context.read<ApiClient>()).getChef(widget.chefId);
+      if (!mounted) return;
+      setState(() {
+        _chef = data;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      AppToast.error(context, e.toString());
+      setState(() => _error = e.toString());
+    }
   }
 
   Future<void> _showFilter() async {
@@ -102,6 +117,12 @@ class _ChefDetailScreenState extends State<ChefDetailScreen> with SingleTickerPr
 
   Map<String, dynamic>? get _raties => _chef?['raties'] as Map<String, dynamic>?;
 
+  String _formatRating(dynamic value) {
+    if (value == null) return '—';
+    final parsed = double.tryParse(value.toString());
+    return parsed == null ? '—' : parsed.toStringAsFixed(1);
+  }
+
   List<Map<String, dynamic>> get _meals {
     final all = (_chef?['meals'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (_mealFilter == null) return all;
@@ -114,6 +135,19 @@ class _ChefDetailScreenState extends State<ChefDetailScreen> with SingleTickerPr
       return AppPageScaffold(
         title: context.tr('chef', fallback: 'الشيف'),
         body: const LoadingView(),
+      );
+    }
+    if (_error != null || _chef == null) {
+      return AppPageScaffold(
+        title: context.tr('chef', fallback: 'الشيف'),
+        body: AppEmptyState(
+          message: _error ?? context.tr('not_found', fallback: 'غير موجود'),
+          icon: Icons.restaurant_outlined,
+          action: AppPrimaryButton(
+            label: context.tr('retry', fallback: 'إعادة المحاولة'),
+            onPressed: _load,
+          ),
+        ),
       );
     }
     final chef = _chef!;
@@ -140,15 +174,15 @@ class _ChefDetailScreenState extends State<ChefDetailScreen> with SingleTickerPr
                   children: [
                     _RatingBox(
                       label: context.tr('speed', fallback: 'السرعة'),
-                      value: _raties?['rating_speed_chef']?.toString() ?? '—',
+                      value: _formatRating(_raties?['rating_speed_chef']),
                     ),
                     _RatingBox(
                       label: context.tr('service', fallback: 'الخدمة'),
-                      value: _raties?['rating_delivery']?.toString() ?? '—',
+                      value: _formatRating(_raties?['rating_delivery']),
                     ),
                     _RatingBox(
                       label: context.tr('taste', fallback: 'الطعم'),
-                      value: _raties?['rating_speed']?.toString() ?? '—',
+                      value: _formatRating(_raties?['rating_chef'] ?? _raties?['rating_speed']),
                     ),
                   ],
                 ),
@@ -195,18 +229,18 @@ class _ChefDetailScreenState extends State<ChefDetailScreen> with SingleTickerPr
                         imageUrl: m['image']?.toString(),
                         onTap: () => Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => MealDetailScreen(mealId: m['id'] as int)),
+                          MaterialPageRoute(
+                            builder: (_) => MealDetailScreen(
+                              mealId: m['id'] as int,
+                              chefId: widget.chefId,
+                            ),
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
-                Center(
-                  child: Text(
-                    context.tr('no_comments', fallback: 'لا توجد تعليقات بعد'),
-                    style: AppTypography.shamelBook(size: 12, color: AppColors.textMuted),
-                  ),
-                ),
+                _CommentsTab(chefId: widget.chefId),
               ],
             ),
           ),
@@ -302,4 +336,89 @@ class _FilterChip extends StatelessWidget {
 
 extension _FirstOrNull<E> on List<E> {
   E? get firstOrNull => isEmpty ? null : first;
+}
+
+class _CommentsTab extends StatefulWidget {
+  const _CommentsTab({required this.chefId});
+
+  final int chefId;
+
+  @override
+  State<_CommentsTab> createState() => _CommentsTabState();
+}
+
+class _CommentsTabState extends State<_CommentsTab> {
+  List<Map<String, dynamic>> _ratings = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() => _loading = true);
+    try {
+      _ratings = await RatingRepository(context.read<ApiClient>()).listChefRatings(widget.chefId);
+    } catch (_) {
+      _ratings = [];
+    }
+    if (mounted) setState(() => _loading = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_ratings.isEmpty) {
+      return Center(
+        child: Text(
+          context.tr('no_comments', fallback: 'لا توجد تعليقات بعد'),
+          style: AppTypography.shamelBook(size: 12, color: AppColors.textMuted),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.fromLTRB(30, 16, 30, 24),
+      itemCount: _ratings.length,
+      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      itemBuilder: (_, i) {
+        final rating = _ratings[i];
+        final user = rating['user'] as Map<String, dynamic>?;
+        final stars = rating['rating_chef'] ?? rating['rating_speed_chef'] ?? 0;
+        return AppCard(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: List.generate(5, (s) => Icon(
+                      s < (int.tryParse(stars.toString()) ?? 0) ? Icons.star : Icons.star_border,
+                      size: 16,
+                      color: AppColors.primary,
+                    )),
+                  ),
+                  Text(
+                    user?['name']?.toString() ?? '',
+                    style: AppTypography.shamelBold(size: 12),
+                  ),
+                ],
+              ),
+              if (rating['note']?.toString().isNotEmpty == true) ...[
+                const SizedBox(height: 8),
+                Text(
+                  rating['note'].toString(),
+                  style: AppTypography.shamelBook(size: 12, color: AppColors.textMuted),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
 }

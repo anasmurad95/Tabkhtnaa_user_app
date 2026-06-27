@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/utils/image_url.dart';
@@ -24,7 +25,14 @@ class _ChatListScreenState extends State<ChatListScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => context.read<ChatProvider>().loadConversations());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await context.read<ChatProvider>().loadConversations();
+      if (!mounted) return;
+      final chat = context.read<ChatProvider>();
+      if (chat.error != null) {
+        AppToast.error(context, chat.error!);
+      }
+    });
   }
 
   String _peerName(Map<String, dynamic> c) {

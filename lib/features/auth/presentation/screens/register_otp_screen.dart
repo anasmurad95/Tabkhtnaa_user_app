@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../data/models/register_session.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
@@ -38,10 +39,9 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
 
   Future<void> _confirm() async {
     if (_code.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(context.tr('otp_required', fallback: 'أدخل الرمز المكون من 4 أرقام')),
-        ),
+      AppToast.info(
+        context,
+        context.tr('otp_required', fallback: 'أدخل الرمز المكون من 4 أرقام'),
       );
       return;
     }
@@ -51,11 +51,17 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
     if (!mounted) return;
 
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? context.tr('otp_invalid', fallback: 'رمز غير صحيح'))),
+      AppToast.error(
+        context,
+        auth.error ?? context.tr('otp_invalid', fallback: 'رمز غير صحيح'),
       );
       return;
     }
+
+    AppToast.success(
+      context,
+      context.tr('otp_verified', fallback: 'تم التحقق من الرمز بنجاح'),
+    );
 
     await showRegisterContinueDialog(
       context,
@@ -77,11 +83,13 @@ class _RegisterOtpScreenState extends State<RegisterOtpScreen> {
     final session = await auth.sendRegistrationSms();
     if (!mounted) return;
     if (session == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? context.tr('resend_failed', fallback: 'تعذر إعادة الإرسال'))),
+      AppToast.error(
+        context,
+        auth.error ?? context.tr('resend_failed', fallback: 'تعذر إعادة الإرسال'),
       );
       return;
     }
+    AppToast.success(context, context.tr('reset_code_sent', fallback: 'تم إرسال رمز التحقق'));
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => RegisterOtpScreen(session: session)),

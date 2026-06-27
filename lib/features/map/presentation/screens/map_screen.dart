@@ -5,6 +5,8 @@ import '../../../../core/constants/figma_assets.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/app_toast.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/error_view.dart';
 import '../../../../core/widgets/figma_asset_image.dart';
 import '../../../../core/widgets/figma_meal_row.dart';
@@ -68,11 +70,14 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     if (radius != null && mounted) {
-
       home.setSearchRadius(radius);
-
       await home.loadChefs();
-
+      if (mounted) {
+        AppToast.info(
+          context,
+          context.tr('filter_applied', fallback: 'تم تطبيق فلتر المسافة'),
+        );
+      }
     }
 
   }
@@ -91,160 +96,46 @@ class _MapScreenState extends State<MapScreen> {
 
 
 
-    return Directionality(
-
-      textDirection: TextDirection.rtl,
-
-      child: Scaffold(
-
-        backgroundColor: AppColors.background,
-
-        body: Stack(
-
-          fit: StackFit.expand,
-
-          children: [
-
-            if (home.loading)
-
-              const LoadingView()
-
-            else if (home.error != null)
-
-              ErrorView(message: home.error!, onRetry: home.loadChefs)
-
-            else
-
-              _MapCanvas(
-
-                chefs: home.chefs,
-
-                centerLat: coords?.lat ?? 31.9539,
-
-                centerLng: coords?.lng ?? 35.9106,
-
-                selectedChef: selected,
-
-                onChefTap: home.selectMapChef,
-
-              ),
-
-            SafeArea(
-
-              child: Column(
-
-                children: [
-
-                  _MapHeader(onFilter: _openDistanceFilter),
-
-                ],
-
-              ),
-
-            ),
-
-            if (selected != null)
-
-              Positioned(
-
-                left: 20,
-
-                right: 20,
-
-                bottom: 100,
-
-                child: _FloatingChefCard(
-
-                  chef: selected,
-
-                  onTap: () => Navigator.push(
-
-                    context,
-
-                    MaterialPageRoute(builder: (_) => ChefDetailScreen(chefId: selected.id)),
-
-                  ),
-
-                  onClose: () => home.selectMapChef(null),
-
-                ),
-
-              ),
-
-          ],
-
+    return AppPageScaffold(
+      title: context.tr('nav_map', fallback: 'الخريطة'),
+      showBack: false,
+      actions: [
+        IconButton(
+          onPressed: _openDistanceFilter,
+          icon: const Icon(Icons.tune, color: Colors.white, size: 22),
         ),
-
-      ),
-
-    );
-
-  }
-
-}
-
-
-
-class _MapHeader extends StatelessWidget {
-
-  const _MapHeader({required this.onFilter});
-
-
-
-  final VoidCallback onFilter;
-
-
-
-  @override
-
-  Widget build(BuildContext context) {
-
-    return Container(
-
-      margin: const EdgeInsets.all(12),
-
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-
-      decoration: BoxDecoration(
-
-        color: AppColors.primary,
-
-        borderRadius: BorderRadius.circular(AppRadii.pillButton),
-
-      ),
-
-      child: Row(
-
+      ],
+      body: Stack(
+        fit: StackFit.expand,
         children: [
-
-          InkWell(
-
-            onTap: onFilter,
-
-            child: const Icon(Icons.tune, color: Colors.white, size: 20),
-
-          ),
-
-          Expanded(
-
-            child: Text(
-
-              context.tr('nav_map', fallback: 'الخريطة'),
-
-              textAlign: TextAlign.center,
-
-              style: AppTypography.shamelBold(size: 14, color: Colors.white),
-
+          if (home.loading)
+            const LoadingView()
+          else if (home.error != null)
+            ErrorView(message: home.error!, onRetry: home.loadChefs)
+          else
+            _MapCanvas(
+              chefs: home.chefs,
+              centerLat: coords?.lat ?? 31.9539,
+              centerLng: coords?.lng ?? 35.9106,
+              selectedChef: selected,
+              onChefTap: home.selectMapChef,
             ),
-
-          ),
-
-          FigmaAssetImage(FigmaAssets.globeWhite, width: 20, height: 20),
-
+          if (selected != null)
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 24,
+              child: _FloatingChefCard(
+                chef: selected,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ChefDetailScreen(chefId: selected.id)),
+                ),
+                onClose: () => home.selectMapChef(null),
+              ),
+            ),
         ],
-
       ),
-
     );
 
   }

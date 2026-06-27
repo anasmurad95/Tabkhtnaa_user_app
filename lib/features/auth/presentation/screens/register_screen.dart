@@ -11,6 +11,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/constants/figma_assets.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
@@ -105,12 +106,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _submit() async {
     if (!_acceptedTerms) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.tr('accept_terms_required', fallback: 'يجب الموافقة على الشروط والأحكام'),
-          ),
-        ),
+      AppToast.info(
+        context,
+        context.tr('accept_terms_required', fallback: 'يجب الموافقة على الشروط والأحكام'),
       );
       return;
     }
@@ -136,17 +134,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final registered = await auth.register(form);
     if (!mounted) return;
     if (!registered) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? context.tr('register_failed', fallback: 'فشل التسجيل'))),
+      AppToast.error(
+        context,
+        auth.error ?? context.tr('register_failed', fallback: 'فشل التسجيل'),
       );
       return;
     }
 
+    AppToast.success(
+      context,
+      context.tr('register_success', fallback: 'تم إنشاء الحساب بنجاح'),
+    );
+
     final session = await auth.sendRegistrationSms();
     if (!mounted) return;
     if (session == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(auth.error ?? context.tr('sms_send_failed', fallback: 'تعذر إرسال رمز التحقق'))),
+      AppToast.error(
+        context,
+        auth.error ?? context.tr('sms_send_failed', fallback: 'تعذر إرسال رمز التحقق'),
       );
       return;
     }

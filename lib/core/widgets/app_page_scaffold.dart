@@ -15,8 +15,9 @@ class AppPageScaffold extends StatelessWidget {
     required this.body,
     this.showBack = true,
     this.onBack,
-    this.headerHeight = 120,
+    this.headerHeight = 112,
     this.actions,
+    this.leading,
     this.backgroundColor = AppColors.background,
   });
 
@@ -26,6 +27,7 @@ class AppPageScaffold extends StatelessWidget {
   final VoidCallback? onBack;
   final double headerHeight;
   final List<Widget>? actions;
+  final Widget? leading;
   final Color backgroundColor;
 
   @override
@@ -37,28 +39,29 @@ class AppPageScaffold extends StatelessWidget {
       ),
     );
 
-    final canPop = Navigator.canPop(context);
-    final displayBack = showBack && canPop;
-
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: backgroundColor,
-        body: Stack(
+        body: Column(
           children: [
-            Positioned(
-              top: -80,
-              left: -158,
-              right: -158,
-              height: 220,
-              child: FigmaAssetImage(FigmaAssets.profileHeaderWave, fit: BoxFit.cover),
-            ),
-            Column(
-              children: [
-                SafeArea(
-                  bottom: false,
-                  child: SizedBox(
-                    height: headerHeight,
+            SizedBox(
+              height: headerHeight + MediaQuery.paddingOf(context).top,
+              width: double.infinity,
+              child: Stack(
+                fit: StackFit.expand,
+                clipBehavior: Clip.none,
+                children: [
+                  const DecoratedBox(
+                    decoration: BoxDecoration(gradient: AppColors.splashGradient),
+                  ),
+                  FigmaAssetImage(
+                    FigmaAssets.profileHeaderWave,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                  ),
+                  SafeArea(
+                    bottom: false,
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
@@ -72,7 +75,12 @@ class AppPageScaffold extends StatelessWidget {
                             style: AppTypography.shamelBold(size: 14, color: Colors.white),
                           ),
                         ),
-                        if (displayBack)
+                        if (leading != null)
+                          Align(
+                            alignment: AlignmentDirectional.centerStart,
+                            child: leading!,
+                          )
+                        else if (showBack)
                           Align(
                             alignment: AlignmentDirectional.centerStart,
                             child: _AppBackButton(
@@ -90,10 +98,10 @@ class AppPageScaffold extends StatelessWidget {
                       ],
                     ),
                   ),
-                ),
-                Expanded(child: body),
-              ],
+                ],
+              ),
             ),
+            Expanded(child: body),
           ],
         ),
       ),

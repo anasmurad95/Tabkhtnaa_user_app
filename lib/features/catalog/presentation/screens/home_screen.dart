@@ -142,7 +142,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             subtitle: meal.description,
                             onTap: () => Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => MealDetailScreen(mealId: meal.id)),
+                              MaterialPageRoute(
+                                builder: (_) => MealDetailScreen(mealId: meal.id, chefId: meal.userId),
+                              ),
                             ),
                           ),
                         );

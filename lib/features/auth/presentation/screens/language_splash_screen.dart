@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../localization/data/models/app_language.dart';
 import '../../../localization/presentation/providers/translation_provider.dart';
 import '../../../localization/presentation/widgets/language_picker_sheet.dart';
@@ -52,6 +53,10 @@ class _LanguageSplashScreenState extends State<LanguageSplashScreen> {
       setState(() => _selected = picked);
       await l10n.selectLanguage(picked.code);
       if (!mounted) return;
+      if (l10n.error != null) {
+        AppToast.error(context, l10n.error!);
+        return;
+      }
       widget.onLanguageConfirmed();
     }
   }

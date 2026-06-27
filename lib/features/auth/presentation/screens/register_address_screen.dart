@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/services/location_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../addresses/data/addresses_repository.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
@@ -125,13 +126,14 @@ class _RegisterAddressScreenState extends State<RegisterAddressScreen> {
         'longitude': _lng,
       });
       if (!mounted) return;
+      AppToast.success(context, context.tr('address_saved', fallback: 'تم حفظ العنوان'));
       await Navigator.push(
         context,
         MaterialPageRoute(builder: (_) => const RegisterPaymentScreen()),
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        AppToast.error(context, e.toString());
       }
     } finally {
       if (mounted) setState(() => _loading = false);

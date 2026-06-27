@@ -87,20 +87,26 @@ class SupportProvider extends ChangeNotifier {
   }
 
   Future<void> markSanctionSeen(int id) async {
-    await _repo.markSanctionSeen(id);
-    sanctions = sanctions
-        .map((s) => s.id == id
-            ? SanctionModel(
-                id: s.id,
-                type: s.type,
-                note: s.note,
-                seen: 'seen',
-                startTime: s.startTime,
-                endTime: s.endTime,
-                createdAt: s.createdAt,
-              )
-            : s)
-        .toList();
-    notifyListeners();
+    try {
+      await _repo.markSanctionSeen(id);
+      sanctions = sanctions
+          .map((s) => s.id == id
+              ? SanctionModel(
+                  id: s.id,
+                  type: s.type,
+                  note: s.note,
+                  seen: 'seen',
+                  startTime: s.startTime,
+                  endTime: s.endTime,
+                  createdAt: s.createdAt,
+                )
+              : s)
+          .toList();
+      notifyListeners();
+    } catch (e) {
+      error = _formatError(e);
+      notifyListeners();
+      rethrow;
+    }
   }
 }

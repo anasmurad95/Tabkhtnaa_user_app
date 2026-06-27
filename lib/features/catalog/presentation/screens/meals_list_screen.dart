@@ -8,6 +8,8 @@ import '../../../../core/theme/app_colors.dart';
 
 import '../../../../core/theme/app_typography.dart';
 
+import '../../../../core/utils/app_toast.dart';
+
 import '../../../../core/widgets/error_view.dart';
 
 import '../../../../core/widgets/figma_meal_row.dart';
@@ -115,6 +117,8 @@ class _MealsListScreenState extends State<MealsListScreen> {
           _loading = false;
 
         });
+
+        AppToast.error(context, e.toString());
 
       }
 
@@ -240,7 +244,9 @@ class _MealsListScreenState extends State<MealsListScreen> {
 
                                   context,
 
-                                  MaterialPageRoute(builder: (_) => MealDetailScreen(mealId: meal.id)),
+                                  MaterialPageRoute(
+                                    builder: (_) => MealDetailScreen(mealId: meal.id, chefId: meal.userId),
+                                  ),
 
                                 ),
 

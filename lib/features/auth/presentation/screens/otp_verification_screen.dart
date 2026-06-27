@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/figma_page_scaffold.dart' show FigmaAuthScaffold;
@@ -35,8 +36,9 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void _verify() {
     final code = _controllers.map((c) => c.text).join();
     if (code.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.tr('otp_required', fallback: 'أدخل الرمز المكون من 4 أرقام'))),
+      AppToast.info(
+        context,
+        context.tr('otp_required', fallback: 'أدخل الرمز المكون من 4 أرقام'),
       );
       return;
     }

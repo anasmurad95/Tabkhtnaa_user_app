@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_spacing.dart';
 import '../../../../core/theme/app_typography.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
 import '../../data/addresses_repository.dart';
@@ -74,10 +75,13 @@ class _AddressFormScreenState extends State<AddressFormScreen> {
         'latitude': _lat,
         'longitude': _lng,
       });
-      if (mounted) Navigator.pop(context);
+      if (mounted) {
+        AppToast.success(context, context.tr('address_saved', fallback: 'تم حفظ العنوان'));
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        AppToast.error(context, e.toString());
       }
     }
     setState(() => _saving = false);

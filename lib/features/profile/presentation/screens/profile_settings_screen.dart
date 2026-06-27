@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
@@ -30,14 +32,26 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     });
   }
 
-  Future<void> _save(UserModel updated) async {
-    final ok = await context.read<ProfileProvider>().updateProfile(updated);
+  Future<void> _save(UserModel updated, {bool phoneChanged = false}) async {
+    final profile = context.read<ProfileProvider>();
+    final ok = await profile.updateProfile(updated);
     if (!mounted) return;
     if (!ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.read<ProfileProvider>().error ?? 'تعذر الحفظ')),
-      );
+      AppToast.error(context, profile.error ?? context.tr('save_failed', fallback: 'تعذر الحفظ'));
+      return;
     }
+    if (phoneChanged) {
+      AppToast.success(
+        context,
+        context.tr(
+          'phone_updated_logout',
+          fallback: 'تم تحديث رقم الهاتف. يرجى تسجيل الدخول مرة أخرى',
+        ),
+      );
+      await context.read<AuthProvider>().logout();
+      return;
+    }
+    AppToast.success(context, context.tr('saved_success', fallback: 'تم الحفظ بنجاح'));
   }
 
   Future<void> _editTextField({
@@ -81,7 +95,6 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
           children: [
             ListTile(title: const Text('ذكر'), onTap: () => Navigator.pop(ctx, 'male')),
             ListTile(title: const Text('أنثى'), onTap: () => Navigator.pop(ctx, 'female')),
-            ListTile(title: const Text('آخر'), onTap: () => Navigator.pop(ctx, 'other')),
           ],
         ),
       ),
@@ -123,6 +136,8 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
 
     if (['ar', 'en', 'fr'].contains(picked.code)) {
       await _save(user.copyWith(defLang: picked.code));
+    } else if (mounted) {
+      AppToast.success(context, context.tr('saved_success', fallback: 'تم الحفظ بنجاح'));
     }
   }
 
@@ -160,7 +175,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                         title: context.tr('phone_number', fallback: 'رقم الهاتف'),
                         initial: user.mobile ?? '',
                         keyboard: TextInputType.phone,
-                        onSave: (v) => _save(user.copyWith(mobile: v)),
+                        onSave: (v) async {
+                          if (v == (user.mobile ?? '')) return;
+                          await _save(user.copyWith(mobile: v), phoneChanged: true);
+                        },
                       ),
                     ),
                     ProfileSettingsRow(

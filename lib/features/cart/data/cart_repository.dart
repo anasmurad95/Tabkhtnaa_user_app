@@ -7,8 +7,10 @@ class CartRepository {
 
   final ApiClient _client;
 
-  Future<Map<String, dynamic>> getCart() async {
-    final res = await _client.dio.get('/user/cart/list');
+  Future<Map<String, dynamic>> getCart({String? deliveryType}) async {
+    final res = await _client.dio.get('/user/cart/list', queryParameters: {
+      if (deliveryType != null) 'delivery_type': deliveryType,
+    });
     final parsed = ApiResponse.fromJson(res.data as Map<String, dynamic>);
     if (!parsed.status) {
       throw ApiException(parsed.errorMsg ?? 'Cart empty');
@@ -55,6 +57,22 @@ class CartRepository {
 
   Future<void> clearCart() async {
     await _client.dio.post('/user/cart/delete_all');
+  }
+
+  Future<List<Map<String, dynamic>>> getAccessories() async {
+    final res = await _client.dio.get('/user/cart/accessories');
+    final parsed = ApiResponse.fromJson(res.data as Map<String, dynamic>);
+    if (!parsed.status || parsed.data == null) return [];
+    final data = parsed.data;
+    if (data is List) return data.cast<Map<String, dynamic>>();
+    return [];
+  }
+
+  Future<Map<String, dynamic>> setAccessories(List<int> accessoryIds) async {
+    final res = await _client.dio.post('/user/cart/set_accessories', data: {
+      'accessories': accessoryIds,
+    });
+    return _unwrap(res.data);
   }
 
   Map<String, dynamic> _unwrap(dynamic raw) {

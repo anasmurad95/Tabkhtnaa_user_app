@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/network/api_client.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
@@ -41,6 +42,9 @@ class _AddressesScreenState extends State<AddressesScreen> {
       _items = await AddressesRepository(context.read<ApiClient>()).list();
     } catch (e) {
       _error = e.toString();
+      if (mounted) {
+        AppToast.error(context, e.toString());
+      }
     }
     setState(() => _loading = false);
   }
@@ -97,8 +101,19 @@ class _AddressesScreenState extends State<AddressesScreen> {
                                           } else if (v == 'delete') {
                                             final ok = await showDeleteAddressConfirm(context);
                                             if (ok && mounted) {
-                                              await AddressesRepository(context.read<ApiClient>()).delete(a['id'] as int);
-                                              _load();
+                                              try {
+                                                await AddressesRepository(context.read<ApiClient>()).delete(a['id'] as int);
+                                                if (!mounted) return;
+                                                AppToast.success(
+                                                  context,
+                                                  context.tr('address_deleted', fallback: 'تم حذف العنوان'),
+                                                );
+                                                _load();
+                                              } catch (e) {
+                                                if (mounted) {
+                                                  AppToast.error(context, e.toString());
+                                                }
+                                              }
                                             }
                                           }
                                         },

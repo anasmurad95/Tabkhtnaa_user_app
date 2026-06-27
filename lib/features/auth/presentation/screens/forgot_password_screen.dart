@@ -6,6 +6,7 @@ import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 import '../../../../core/theme/app_radii.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../localization/presentation/extensions/translation_context.dart';
@@ -45,16 +46,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     if (!mounted) return;
 
     if (session == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            context.read<AuthProvider>().error ??
-                context.tr('reset_request_failed', fallback: 'تعذر إرسال الطلب'),
-          ),
-        ),
+      AppToast.error(
+        context,
+        context.read<AuthProvider>().error ??
+            context.tr('reset_request_failed', fallback: 'تعذر إرسال الطلب'),
       );
       return;
     }
+
+    AppToast.success(
+      context,
+      context.tr('reset_code_sent', fallback: 'تم إرسال رمز التحقق'),
+    );
 
     await Navigator.push(
       context,

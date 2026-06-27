@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/utils/app_toast.dart';
 
 import '../../../../core/theme/app_typography.dart';
 
@@ -99,27 +100,13 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
   Future<void> _submit() async {
 
     if (_orderId == null) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-
-        SnackBar(content: Text(context.tr('select_order', fallback: 'اختر طلباً'))),
-
-      );
-
+      AppToast.info(context, context.tr('select_order', fallback: 'اختر طلباً'));
       return;
-
     }
 
     if (_title.text.trim().isEmpty || _details.text.trim().isEmpty) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-
-        SnackBar(content: Text(context.tr('fill_required', fallback: 'يرجى تعبئة جميع الحقول'))),
-
-      );
-
+      AppToast.info(context, context.tr('fill_required', fallback: 'يرجى تعبئة جميع الحقول'));
       return;
-
     }
 
 
@@ -139,27 +126,14 @@ class _SubmitComplaintScreenState extends State<SubmitComplaintScreen> {
     if (!mounted) return;
 
     if (ok) {
-
+      AppToast.success(context, context.tr('complaint_sent', fallback: 'تم إرسال الشكوى'));
       Navigator.pop(context, true);
-
     } else {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-
-        SnackBar(
-
-          content: Text(
-
-            context.read<SupportProvider>().error ??
-
-                context.tr('complaint_send_failed', fallback: 'تعذر إرسال الشكوى'),
-
-          ),
-
-        ),
-
+      AppToast.error(
+        context,
+        context.read<SupportProvider>().error ??
+            context.tr('complaint_send_failed', fallback: 'تعذر إرسال الشكوى'),
       );
-
     }
 
   }

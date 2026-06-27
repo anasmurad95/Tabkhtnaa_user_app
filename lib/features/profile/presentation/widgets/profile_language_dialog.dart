@@ -143,8 +143,6 @@ String genderDisplayLabel(String? gender) {
       return 'ذكر';
     case 'female':
       return 'أنثى';
-    case 'other':
-      return 'آخر';
     default:
       return '—';
   }
